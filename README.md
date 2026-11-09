@@ -70,8 +70,8 @@ import QtQuick 2.15
 Rectangle {
     color: "#2b2b2b"
 
-    function run() { console.log("loaded") }
-    function dispose() { console.log("unloading") }
+    function run() { host.log("loaded") }
+    function dispose() { host.log("unloading") }
 
     Text {
         anchors.centerIn: parent
@@ -80,6 +80,32 @@ Rectangle {
     }
 }
 ```
+
+## Logging
+
+The debug window has a log panel. To write to it from your plugin, call `host.log()`:
+
+```qml
+function run() {
+    host.log("loaded")
+    host.log("settings:", { mode: "test", width: 400 })
+}
+```
+
+- It takes any number of arguments. Objects are printed as JSON.
+- Each line is timestamped, and the log is trimmed automatically when it gets long. **Clear log** empties it.
+- `console.log()` still works, but it only writes to MuseScore's own console output, not to the debug window.
+- Errors thrown while loading, or inside `run()` or `dispose()`, appear in the red error banner.
+- `host` only exists while your file is loaded by Plugin Hot Reload. If the same file must also run on its own, guard the call:
+
+```qml
+function log(msg) {
+    if (typeof host !== "undefined") host.log(msg)
+    else console.log(msg)
+}
+```
+
+- Don't give any element in your plugin the id `host`, because it would hide the host's.
 
 ## Limitations
 
